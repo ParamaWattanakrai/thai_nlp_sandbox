@@ -1,11 +1,11 @@
 from dict import *
 
-text = ('เครา')
+text = ('เคราะห์')
 no_tones = []
-syllables = []
 text_lists = []
 text_vowels = []
 split_indexes = []
+syllables = []
 
 # FIRST LAST CHECKER
 # ะ  ์ function
