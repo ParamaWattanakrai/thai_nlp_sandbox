@@ -6,7 +6,7 @@ POLY_INITIALS = th_utils['poly_initials']
 POLY_FOLLOWS = th_utils['poly_follows']
 
 #text = ('กร้ะเพราห์อกะเพราะท์โต๊ะพิ์เนี้ยะก์เกลื่อง์เละซ์')
-text = ('แกะเพราห์อกะเพราะท์โต๊ะเนี้ยะก์เกลื่อง์เละซ์')
+text = ('กร้ะเพราห์อกะเพราะท์โต๊ะเนี้ยะก์เกลื่อง์เละซ์')
 text_lists = [[char, true_index] for true_index, char in enumerate(text)]
 no_tones = [[char, true_index] for char, true_index in text_lists if not char in th_chars['diacritics']['tones']]
 text_vowels = [[char, true_index] for char, true_index in text_lists if char in th_chars['vowels']]
@@ -32,15 +32,6 @@ def add_true_blend_vowel_initial(current):
         return 0
     return 1
 
-def final_karan_index(current):
-    add_index = 0
-    if no_tones[current+2][0] in th_chars['vowels']:
-        add_index = 1
-    if no_tones[current+add_index+2][0] == '์':
-        add_index += 2
-    end_syllable_index = current + add_index
-    return end_syllable_index
-
 def check_poly_follow(poly_initial_index):
     poly_initial = no_tones[poly_initial_index]
     add_blend = add_true_blend_vowel_initial(poly_initial_index)
@@ -48,6 +39,15 @@ def check_poly_follow(poly_initial_index):
     if potential_poly_follow[0] not in POLY_FOLLOWS[poly_initial[0]]:
         return False
     return True
+
+def check_karan(current):
+    add_index = 0
+    if no_tones[current+2][0] in th_chars['vowels']:
+        add_index = 1
+    if no_tones[current+add_index+2][0] == '์':
+        add_index += 2
+    end_syllable_index = current + add_index
+    return end_syllable_index
 
 def check_poly_sara_ee(poly_initial_index):
     add_blend = add_true_blend_vowel_initial(poly_initial_index)
@@ -58,76 +58,27 @@ def check_poly_sara_ee(poly_initial_index):
     if poly_follow_first[0] == 'ะ':
         add_index = 2
         potential_final_consonant = False
-        must_final_consonant = False
     if poly_follow_first[0] == 'า':
         add_index = 2
         potential_final_consonant = False
-        must_final_consonant = False
-    if poly_follow_first[0] == 'ิ':
-        add_index = 2
-        potential_final_consonant = True
-        must_final_consonant = True
-    if poly_follow_first[0] == '็':
-        add_index = 2
-        potential_final_consonant = True
-        must_final_consonant = True
     if (poly_follow_first[0] == 'ี' and potential_poly_follow_second[0] == 'ย') \
     or (poly_follow_first[0] == 'ื' and potential_poly_follow_second[0] == 'อ'):
         add_index = 3
         potential_final_consonant = True
-        must_final_consonant = False
 
     potential_sara_a = no_tones[poly_initial_index+add_blend+add_index+1]
     if potential_sara_a[0] == 'ะ':
         add_index += 1
         potential_final_consonant = False
-        must_final_consonant = False
     
-    poly_final_index = poly_initial_index + add_blend + add_index
-    return [poly_final_index, potential_final_consonant, must_final_consonant]
-
-def check_poly_sara_aeae(poly_initial_index):
-    add_blend = add_true_blend_vowel_initial(poly_initial_index)
-    add_index = 0
-    poly_follow = no_tones[poly_initial_index+add_blend+2]
-
-    if poly_follow[0] == 'ะ':
-        add_index = 2
-        potential_final_consonant = False
-        must_final_consonant = False
-    if poly_follow[0] == '็':
-        add_index = 2
-        potential_final_consonant = True
-        must_final_consonant = True
-    
-    poly_final_index = poly_initial_index + add_blend + add_index
-    return [poly_final_index, potential_final_consonant, must_final_consonant]
-
-def check_poly_other(poly_initial_index):
-    add_blend = add_true_blend_vowel_initial(poly_initial_index)
-    add_index = 0
-    poly_follow = no_tones[poly_initial_index+add_blend+2]
-
-    if poly_follow[0] == 'ะ':
-        add_index = 2
-        potential_final_consonant = False
-        must_final_consonant = False
-    
-    poly_final_index = poly_initial_index + add_blend + add_index
-    return [poly_final_index, potential_final_consonant, must_final_consonant]
+    poly_final_index = check_karan(poly_initial_index + add_blend + add_index)
+    return [poly_final_index, potential_final_consonant]
 
 def poly_initial(vowels):
     if vowels[0] in POLY_INITIALS:
         poly_initial_index = find_index(vowels, no_tones)
         if check_poly_follow(poly_initial_index) == True:
-            if no_tones[poly_initial_index][0] == 'เ':
-                poly_final_index = check_poly_sara_ee(poly_initial_index)[0]
-            if no_tones[poly_initial_index][0] == 'แ':
-                poly_final_index = check_poly_sara_aeae(poly_initial_index)[0]
-            if no_tones[poly_initial_index][0] == 'โ' \
-            or no_tones[poly_initial_index][0] == 'ั':
-                poly_final_index = check_poly_other(poly_initial_index)[0]
-            poly_final_index = final_karan_index(poly_final_index)
+            poly_final_index = check_poly_sara_ee(poly_initial_index)[0]
             print(no_tones[poly_initial_index])
             print(no_tones[poly_final_index])
             print('yes')
